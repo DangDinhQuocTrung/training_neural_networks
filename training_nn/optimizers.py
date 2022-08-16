@@ -56,8 +56,7 @@ class SGD(BaseOptimizer):
         super(SGD, self).__init__(params, defaults)
 
     def update(self, i, param, grad, state):
-        alpha = -self.lr
-        param.add_(grad, alpha=alpha)
+        param -= self.lr * grad
 
 
 class MSGD(BaseOptimizer):

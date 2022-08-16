@@ -17,14 +17,11 @@ class BatchNorm(nn.Module):
     def forward(self, inputs):
         if self.training:
             mean = inputs.mean([0, 2, 3])
-            var = inputs.var([0, 2, 3], unbiased=False)
-            n = inputs.numel() / inputs.shape[1]
+            var = inputs.var([0, 2, 3], unbiased=True)
 
             with torch.no_grad():
-                self.running_mean = self.momentum * mean \
-                    + (1.0 - self.momentum) * self.running_mean
-                self.running_var = self.momentum * var * n / (n - 1) \
-                    + (1.0 - self.momentum) * self.running_var
+                self.running_mean = self.momentum * mean + (1.0 - self.momentum) * self.running_mean
+                self.running_var = self.momentum * var + (1.0 - self.momentum) * self.running_var
         else:
             mean = self.running_mean
             var = self.running_var
@@ -48,14 +45,11 @@ class InstanceNorm(nn.Module):
     def forward(self, inputs):
         if self.training:
             mean = inputs.mean([0, 1])
-            var = inputs.var([0, 1], unbiased=False)
-            n = inputs.numel() / inputs.shape[1]
+            var = inputs.var([0, 1], unbiased=True)
 
             with torch.no_grad():
-                self.running_mean = self.momentum * mean \
-                    + (1.0 - self.momentum) * self.running_mean
-                self.running_var = self.momentum * var * n / (n - 1) \
-                    + (1.0 - self.momentum) * self.running_var
+                self.running_mean = self.momentum * mean + (1.0 - self.momentum) * self.running_mean
+                self.running_var = self.momentum * var + (1.0 - self.momentum) * self.running_var
         else:
             mean = self.running_mean
             var = self.running_var
@@ -77,7 +71,7 @@ class LayerNorm(nn.Module):
 
     def forward(self, inputs):
         mean = inputs.mean([0])
-        var = inputs.var([0], unbiased=False)
+        var = inputs.var([0], unbiased=True)
 
         inputs = (inputs - mean[None, :, :, :]) / (torch.sqrt(var[None, :, :, :] + self.eps))
         inputs = inputs * self.weight[None, None, :, :] + self.bias[None, None, :, :]
@@ -98,7 +92,7 @@ class GroupNorm(nn.Module):
     def forward(self, inputs):
         inputs = inputs.reshape(inputs.shape[0], self.num_groups, -1, inputs.shape[2], inputs.shape[3])
         mean = inputs.mean([0, 1])
-        var = inputs.var([0, 1], unbiased=False)
+        var = inputs.var([0, 1], unbiased=True)
 
         inputs = (inputs - mean[None, None, :, :, :]) / (torch.sqrt(var[None, None, :, :, :] + self.eps))
         inputs = inputs.reshape(inputs.shape[0], -1, inputs.shape[3], inputs.shape[4])
